@@ -1,0 +1,33 @@
+---
+prometheus:
+  listen: '127.0.0.1:9111'
+
+elasticsearch:
+  hosts:
+    - 'http://localhost:9200'
+  timeout:
+    dial: 10
+    response_header: 10
+
+redis:
+  server: 'localhost:6379'
+
+geoip:
+  enable: true
+  database:
+    asn: 'GeoLite2-ASN.mmdb'
+    country: 'GeoLite2-Country.mmdb'
+
+routines:
+  stats2elastic:
+    prefix: 'stats_*' #Redis prefix
+    index: 'statistics' #Elasticsearch Index
+    keys:
+      time:
+        rename: '@timestamp'
+        transform:
+          time: true
+      src:
+        transform:
+          geoip: true
+          iptoint: true
