@@ -12,7 +12,7 @@ Due to the design of python, this costs a lot of (wasted) cpu ressources, python
 
 - Handle each redis key (e.g. wildcard prefix) as individual go routine and output data to a individual elasticsearch index
 - Transformation of json fields -> E.g. add GeoIP data, convert ip-addresses to decimal or from decimal, convert unix timestamp to RFC3339 timestamp
-- Exooses comprehensive prometheus metrics about uptime, errors and shipping rate using it's inbuilt exporter
+- Exposes comprehensive prometheus metrics about uptime, errors and shipping rate using it's inbuilt exporter
 
 ## Configuration
 
