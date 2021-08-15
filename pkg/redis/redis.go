@@ -3,7 +3,7 @@ package redis
 import (
 	"context"
 
-	"github.com/jphhofmann/redship/package/config"
+	"github.com/jphhofmann/redship/pkg/config"
 
 	"github.com/go-redis/redis/v8"
 )

@@ -3,7 +3,7 @@ package geoip
 import (
 	"log"
 
-	"github.com/jphhofmann/redship/package/config"
+	"github.com/jphhofmann/redship/pkg/config"
 
 	"github.com/oschwald/geoip2-golang"
 )

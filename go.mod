@@ -1,4 +1,4 @@
-module github.com/jphhofmann/redship/v2
+module github.com/jphhofmann/redship
 
 go 1.15
 

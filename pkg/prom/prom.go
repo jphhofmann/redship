@@ -3,7 +3,7 @@ package prom
 import (
 	"net/http"
 
-	"github.com/jphhofmann/redship/package/config"
+	"github.com/jphhofmann/redship/pkg/config"
 
 	log "github.com/sirupsen/logrus"
 
