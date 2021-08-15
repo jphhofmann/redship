@@ -100,18 +100,13 @@ func Transform(output map[string]interface{}, entry string, value config.Key) ma
 		case string:
 			ip := net.ParseIP(data)
 			asn, err := geoip.DB_ASN.ASN(ip)
-			if err != nil {
-				output["geoip_isp"] = ""
-				output["geoip_asn"] = 0
-			} else {
-				output["geoip_isp"] = asn.AutonomousSystemOrganization
-				output["geoip_asn"] = strconv.Itoa(int(asn.AutonomousSystemNumber))
+			if err == nil {
+				output[entry+"_geoip_isp"] = asn.AutonomousSystemOrganization
+				output[entry+"_geoip_asn"] = strconv.Itoa(int(asn.AutonomousSystemNumber))
 			}
 			country, err := geoip.DB_Country.Country(ip)
-			if err != nil {
-				output["geoip_country"] = ""
-			} else {
-				output["geoip_country"] = country.Country.IsoCode
+			if err == nil {
+				output[entry+"_geoip_country"] = country.Country.IsoCode
 			}
 		}
 	}
