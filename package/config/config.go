@@ -13,6 +13,7 @@ type Key struct {
 		Time   bool `yaml:"time"`    //Transform into time
 		GeoIP  bool `yaml:"geoip"`   //Add GeoIP data from field
 		IP2Int bool `yaml:"iptoint"` //Add IP2Int from field
+		Int2IP bool `yaml:"inttoip"` //Add Int2IP from field
 	} `yaml:"transform"` //Transform options
 }
 

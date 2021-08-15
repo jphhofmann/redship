@@ -45,7 +45,7 @@ func CheckIPFamily(ip string) int {
 }
 
 /* Convert IPv4 to decimal */
-func IP4toInt(IPv4Addr string) int64 {
+func IP4ToInt(IPv4Addr string) int64 {
 	bits := strings.Split(IPv4Addr, ".")
 	b0, _ := strconv.Atoi(bits[0])
 	b1, _ := strconv.Atoi(bits[1])
@@ -59,12 +59,27 @@ func IP4toInt(IPv4Addr string) int64 {
 	return sum
 }
 
+/* Convert decimal to IPv4 */
+func IntToIP4(ipInt int64) string {
+	b0 := strconv.FormatInt((ipInt>>24)&0xff, 10)
+	b1 := strconv.FormatInt((ipInt>>16)&0xff, 10)
+	b2 := strconv.FormatInt((ipInt>>8)&0xff, 10)
+	b3 := strconv.FormatInt((ipInt & 0xff), 10)
+	return b0 + "." + b1 + "." + b2 + "." + b3
+}
+
 /* Convert IPv6 to decimal */
-func IP6toInt(IPv6Addr string) *big.Int {
+func IP6ToInt(IPv6Addr string) *big.Int {
 	ip := net.ParseIP(IPv6Addr)
 	IPv6Int := big.NewInt(0)
 	IPv6Int.SetBytes(ip.To16())
 	return IPv6Int
+}
+
+/* Convert decimal to IPv6 */
+func IntToIP6(intipv6 *big.Int) string {
+	ip := intipv6.Bytes()
+	return string(ip)
 }
 
 func Transform(output map[string]interface{}, entry string, value config.Key) map[string]interface{} {
@@ -107,12 +122,27 @@ func Transform(output map[string]interface{}, entry string, value config.Key) ma
 		case string:
 			family := CheckIPFamily(data)
 			if family == 4 {
-				output[entry+"_int"] = fmt.Sprintf("%v", IP4toInt(data))
+				output[entry+"_int"] = fmt.Sprintf("%v", IP4ToInt(data))
 			} else if family == 6 {
-				output[entry+"_int"] = fmt.Sprintf("%v", IP6toInt(data))
+				output[entry+"_int"] = fmt.Sprintf("%v", IP6ToInt(data))
 			}
 		}
 	}
+
+	/* Apply integer to IP */
+	if value.Transform.Int2IP {
+		switch data := output[entry].(type) {
+		case float64:
+			if data <= 4294967295 {
+				output[entry+"_ip"] = IntToIP4(int64(data))
+			} else {
+				output[entry+"_ip"] = IntToIP6(output[entry].(*big.Int))
+			}
+		case string:
+			output[entry+"_ip"] = IntToIP6(output[entry].(*big.Int))
+		}
+	}
+
 	return output
 }
 
@@ -123,7 +153,7 @@ func Routine(routine string) {
 		var cursor uint64
 		var keys []string
 		var err error
-		keys, cursor, err = redis.Client.Scan(redis.Ctx, cursor, config.Cfg.Routines[routine].Prefix, 0).Result()
+		keys, cursor, err = redis.Client.Scan(redis.Ctx, cursor, config.Cfg.Routines[routine].Prefix, 10000).Result()
 		if err != nil {
 			prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": routine}).Inc()
 			log.Errorf("Failed to retrieve keys, %v", err)
@@ -139,6 +169,10 @@ func Routine(routine string) {
 						prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": routine}).Inc()
 						log.Errorf("Caught invalid json, %v", err)
 					} else {
+						/* Get all fields */
+						output = fields
+
+						/* Apply actions on fields */
 						for key, value := range config.Cfg.Routines[routine].Keys {
 							/* Rename field? */
 							var entry string = key
@@ -179,6 +213,6 @@ func Routine(routine string) {
 				}
 			}
 		}
-		time.Sleep(1 * time.Second)
+		time.Sleep(1 * time.Millisecond)
 	}
 }
