@@ -53,7 +53,7 @@ type config struct {
 var Cfg config
 
 func Load() {
-	f, err := os.Open("config.yaml")
+	f, err := os.Open("/etc/redship.yaml")
 	if err != nil {
 		log.Fatalf("Failed to load config, %v", err)
 	}
