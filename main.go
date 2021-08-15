@@ -1,15 +1,17 @@
 package main
 
 import (
-	"redship/package/config"
-	"redship/package/elastic"
-	"redship/package/prom"
-	"redship/package/routines"
 	"time"
 
-	"redship/package/redis"
+	"github.com/jphhofmann/redship/pkg/elastic"
+	"github.com/jphhofmann/redship/pkg/prom"
+	"github.com/jphhofmann/redship/pkg/routines"
 
-	"redship/package/geoip"
+	"github.com/jphhofmann/redship/pkg/config"
+
+	"github.com/jphhofmann/redship/pkg/redis"
+
+	"github.com/jphhofmann/redship/pkg/geoip"
 
 	log "github.com/sirupsen/logrus"
 )
