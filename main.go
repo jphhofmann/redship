@@ -38,9 +38,15 @@ func main() {
 	redis.Client = redis.Connect()
 
 	/* Run redship routines */
-	for routine, _ := range config.Cfg.Routines {
+	for routine, cfg := range config.Cfg.Routines {
 		log.Infof("Starting redship routine %v", routine)
-		go routines.Routine(routine)
+		if !cfg.UDPRoutine {
+			go routines.Routine(routine)
+		}
+	}
+
+	if config.Cfg.UDPRoutine {
+		go routines.UDPRoutine()
 	}
 
 	/* Update uptime */

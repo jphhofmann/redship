@@ -212,3 +212,79 @@ func Routine(routine string) {
 		time.Sleep(1 * time.Millisecond)
 	}
 }
+
+func UDPRoutine() {
+
+	/* Open UDP Connection */
+	s, err := net.ResolveUDPAddr("udp4", "0.0.0.0:1286")
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	connection, err := net.ListenUDP("udp4", s)
+	if err != nil {
+		log.Error(err)
+		return
+	}
+
+	defer connection.Close()
+	buffer := make([]byte, 1024)
+	output := make(map[string]interface{})
+	var fields map[string]interface{}
+	for {
+		n, _, err := connection.ReadFromUDP(buffer)
+		if err != nil {
+			log.Error(err)
+		} else {
+			err := json.Unmarshal(buffer[0:n-1], &fields)
+			if err != nil {
+				prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": "undefined"}).Inc()
+				log.Errorf("Caught invalid json, %v", err)
+			} else {
+				switch r := fields["routine"].(type) {
+				case string:
+					/* Get all fields */
+					output = fields
+
+					/* Apply actions on fields */
+					for key, value := range config.Cfg.Routines[r].Keys {
+						/* Rename field? */
+						var entry string = key
+						if len(value.Rename) != 0 {
+							entry = value.Rename
+						}
+
+						/* Final field */
+						output[entry] = fields[key]
+						output = Transform(output, entry, value)
+					}
+
+					/* Create new json from output interface */
+					result, err := json.Marshal(output)
+					if err != nil {
+						prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": r}).Inc()
+						log.Errorf("Failed to marshal json, %v", err)
+					} else {
+						/* Ship to elasticsearch */
+						req := esapi.IndexRequest{
+							Index:      config.Cfg.Routines[r].Index + "-" + time.Now().Format("2006-01-02"),
+							DocumentID: uuid.NewV4().String(),
+							Body:       strings.NewReader(string(result)),
+							Refresh:    "false",
+						}
+						/* Carry out ES Doc creation */
+						res, err := req.Do(context.Background(), elastic.Client)
+						if err != nil {
+							prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": r}).Inc()
+							log.Errorf("Error getting response, %v", err)
+						} else {
+							prom.Metrics.Routines.Exported.With(prometheus.Labels{"routine": r}).Inc()
+							res.Body.Close()
+						}
+					}
+				}
+			}
+		}
+	}
+}

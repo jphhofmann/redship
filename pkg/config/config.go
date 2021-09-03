@@ -19,9 +19,10 @@ type Key struct {
 }
 
 type Routine struct {
-	Index  string         `yaml:"index"`  //Elasticsearch Index
-	Prefix string         `yaml:"prefix"` //Redis Prefix
-	Keys   map[string]Key `yaml:"keys"`   //JSON fields
+	Index      string         `yaml:"index"`  //Elasticsearch Index
+	Prefix     string         `yaml:"prefix"` //Redis Prefix
+	Keys       map[string]Key `yaml:"keys"`   //JSON fields
+	UDPRoutine bool           `yaml:"udp"`    //UDP Routine?
 }
 
 type config struct {
@@ -47,7 +48,8 @@ type config struct {
 			Country string `yaml:"country"`
 		} `yaml:"database"`
 	} `yaml:"geoip"`
-	Routines map[string]Routine `yaml:"routines"`
+	Routines   map[string]Routine `yaml:"routines"`    //Routine configs
+	UDPRoutine bool               `yaml:"udp_routine"` //Enable UDP Routine
 }
 
 var Cfg config
