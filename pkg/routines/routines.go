@@ -237,7 +237,7 @@ func UDPRoutine() {
 		if err != nil {
 			log.Error(err)
 		} else {
-			err := json.Unmarshal(buffer[0:n-1], &fields)
+			err := json.Unmarshal(buffer[0:n], &fields)
 			if err != nil {
 				prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": "undefined"}).Inc()
 				log.Errorf("Caught invalid json, %v", err)
