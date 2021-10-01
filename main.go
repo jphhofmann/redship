@@ -5,11 +5,10 @@ import (
 
 	"github.com/jphhofmann/redship/pkg/elastic"
 	"github.com/jphhofmann/redship/pkg/prom"
+	"github.com/jphhofmann/redship/pkg/redis"
 	"github.com/jphhofmann/redship/pkg/routines"
 
 	"github.com/jphhofmann/redship/pkg/config"
-
-	"github.com/jphhofmann/redship/pkg/redis"
 
 	"github.com/jphhofmann/redship/pkg/geoip"
 
@@ -34,17 +33,20 @@ func main() {
 		log.Fatalf("Failed to open elasticsearch client, %v", err)
 	}
 
-	/* Open redis client */
-	redis.Client = redis.Connect()
-
-	/* Run redship routines */
-	for routine, cfg := range config.Cfg.Routines {
-		log.Infof("Starting redship routine %v", routine)
-		if !cfg.UDPRoutine {
-			go routines.Routine(routine)
+	/* Enable Redis import */
+	if config.Cfg.RedisRoutine {
+		/* Open redis client */
+		redis.Client = redis.Connect()
+		/* Spawn go routines */
+		for routine, cfg := range config.Cfg.Routines {
+			log.Infof("Starting redship routine %v", routine)
+			if !cfg.UDPRoutine {
+				go routines.Routine(routine)
+			}
 		}
 	}
 
+	/* Enable UDP import */
 	if config.Cfg.UDPRoutine {
 		go routines.UDPRoutine()
 	}

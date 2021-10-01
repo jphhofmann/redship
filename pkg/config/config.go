@@ -48,8 +48,9 @@ type config struct {
 			Country string `yaml:"country"`
 		} `yaml:"database"`
 	} `yaml:"geoip"`
-	Routines   map[string]Routine `yaml:"routines"`    //Routine configs
-	UDPRoutine bool               `yaml:"udp_routine"` //Enable UDP Routine
+	Routines     map[string]Routine `yaml:"routines"`      //Routine configs
+	RedisRoutine bool               `yaml:"redis_routine"` //Enable redis Routine
+	UDPRoutine   bool               `yaml:"udp_routine"`   //Enable UDP Routine
 }
 
 var Cfg config
@@ -62,4 +63,7 @@ func Load() {
 	defer f.Close()
 	decoder := yaml.NewDecoder(f)
 	err = decoder.Decode(&Cfg)
+	if err != nil {
+		log.Fatal(err)
+	}
 }
