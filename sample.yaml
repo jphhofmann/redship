@@ -9,6 +9,9 @@ elasticsearch:
     dial: 10
     response_header: 10
 
+redis_routine: true
+udp_routine: true
+
 redis:
   server: 'localhost:6379'
 
