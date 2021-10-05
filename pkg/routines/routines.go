@@ -229,15 +229,15 @@ func UDPRoutine() {
 	}
 
 	defer connection.Close()
-	buffer := make([]byte, 1024)
-	output := make(map[string]interface{})
-	var fields map[string]interface{}
 	for {
-		n, _, err := connection.ReadFromUDP(buffer)
+		buffer := make([]byte, 1024)
+		output := make(map[string]interface{})
+		var fields map[string]interface{}
+		n, _, err := connection.ReadFromUDP(buffer[:])
 		if err != nil {
 			log.Error(err)
 		} else {
-			err := json.Unmarshal(buffer[0:n], &fields)
+			err := json.Unmarshal(buffer[:n], &fields)
 			if err != nil {
 				prom.Metrics.Routines.Errors.With(prometheus.Labels{"routine": "undefined"}).Inc()
 				log.Errorf("Caught invalid json, %v", err)
